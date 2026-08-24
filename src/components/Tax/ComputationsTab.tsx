@@ -29,13 +29,13 @@ export function ComputationsTab({
   taxYear: number;
   quarter: 1 | 2 | 3 | 4;
 }) {
-  const { active: filterActive, criteria: filterCriteria, result: filterResult } = useTaxFilter();
+  const { active: filterActive, selection, result: filterResult } = useTaxFilter();
   const analysis = useApi<{ data: QuarterlyTaxAnalysisAll }>(
     `/tax/analysis/quarterly/all?companyId=${company.id}&taxYear=${taxYear}`,
   );
 
   const filterAppliesHere =
-    filterActive && filterCriteria?.quarter === quarter && filterCriteria.taxYear === taxYear;
+    filterActive && selection?.quarter === quarter && selection.taxYear === taxYear;
 
   if (analysis.loading) {
     return (

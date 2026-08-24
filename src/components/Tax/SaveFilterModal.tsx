@@ -11,20 +11,20 @@ export function SaveFilterModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { criteria, result } = useTaxFilter();
+  const { selection, result } = useTaxFilter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  if (!criteria || !result) return null;
+  if (!selection || !result) return null;
 
   const taxDue = 'totalTaxDue' in result.recalculatedTax
     ? result.recalculatedTax.totalTaxDue
     : result.recalculatedTax.taxDue;
 
   async function save() {
-    if (!criteria) return;
+    if (!selection) return;
     if (!name.trim()) {
       setError('Give this scenario a name.');
       return;
@@ -33,14 +33,12 @@ export function SaveFilterModal({
     setError('');
     try {
       await api.post('/tax/saved-filters', {
-        companyId: criteria.companyId,
+        companyId: selection.companyId,
         name: name.trim(),
         description: description.trim() || undefined,
-        taxYear: criteria.taxYear,
-        quarter: criteria.quarter,
-        minAmount: criteria.minAmount,
-        maxAmount: criteria.maxAmount,
-        transactionType: criteria.transactionType,
+        taxYear: selection.taxYear,
+        quarter: selection.quarter,
+        selectedTransactionIds: selection.selectedTransactionIds,
       });
       onSaved();
       onClose();

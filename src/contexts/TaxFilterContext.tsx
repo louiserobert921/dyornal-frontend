@@ -2,16 +2,17 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { ApiError, api } from '@/lib/api';
 import type { MixedIncomeTaxResult, TaxResult } from '@/types';
 
-export interface TaxFilterCriteria {
+export interface TaxFilterSelection {
   companyId: string;
   taxYear: number;
   quarter: 1 | 2 | 3 | 4;
-  minAmount?: number;
-  maxAmount?: number;
-  transactionType: 'sales' | 'expenses' | 'all';
+  /** The transaction IDs to include — everything else of a sale/expense type
+   * in the quarter is treated as deselected. */
+  selectedTransactionIds: string[];
 }
 
 interface TaxFilterResult {
+  selectedTransactionIds: string[];
   excludedTransactionIds: string[];
   includedCount: number;
   totalCount: number;
@@ -25,12 +26,15 @@ interface TaxFilterResult {
 }
 
 interface TaxFilterContextValue {
+  /** True once at least one transaction has been deselected — an unmodified
+   * "everything selected" state is not an active filter. */
   active: boolean;
-  criteria: TaxFilterCriteria | null;
+  selection: TaxFilterSelection | null;
   result: TaxFilterResult | null;
   /** Set when the active filter was loaded from a saved scenario rather than
-   * entered ad-hoc — the banner and panel use this to show the scenario's
-   * name and highlight it as selected. */
+   * built ad-hoc — the banner and panel use this to show the scenario's name
+   * and highlight it as selected. Editing the selection after loading clears
+   * this, since the result no longer matches the saved scenario exactly. */
   activeSavedFilterId: string | null;
   activeSavedFilterName: string | null;
   applying: boolean;
@@ -39,7 +43,7 @@ interface TaxFilterContextValue {
    * or /tax/* query as `excludeTransactionIds` — empty string when no filter
    * is active, so callers can splice it in unconditionally. */
   excludeTransactionIdsParam: string;
-  applyFilter: (criteria: TaxFilterCriteria) => Promise<void>;
+  applySelection: (selection: TaxFilterSelection) => Promise<void>;
   applySavedFilter: (filterId: string) => Promise<void>;
   reset: () => void;
 }
@@ -49,28 +53,30 @@ const TaxFilterContext = createContext<TaxFilterContextValue | null>(null);
 interface SavedFilterApplyResponse extends TaxFilterResult {
   filterId: string;
   filterName: string;
-  criteria: TaxFilterCriteria;
+  selection: TaxFilterSelection;
 }
 
 export function TaxFilterProvider({ children }: { children: ReactNode }) {
-  const [criteria, setCriteria] = useState<TaxFilterCriteria | null>(null);
+  const [selection, setSelection] = useState<TaxFilterSelection | null>(null);
   const [result, setResult] = useState<TaxFilterResult | null>(null);
   const [activeSavedFilterId, setActiveSavedFilterId] = useState<string | null>(null);
   const [activeSavedFilterName, setActiveSavedFilterName] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const applyFilter = useCallback(async (next: TaxFilterCriteria) => {
+  const applySelection = useCallback(async (next: TaxFilterSelection) => {
     setApplying(true);
     setError(null);
     try {
       const res = await api.post<{ data: TaxFilterResult }>('/tax/analysis/filter', next);
-      setCriteria(next);
+      setSelection(next);
       setResult(res.data);
+      // A saved scenario stays "active" only while its exact selection is
+      // still in effect — editing checkboxes after loading one detaches it.
       setActiveSavedFilterId(null);
       setActiveSavedFilterName(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not apply this filter.');
+      setError(err instanceof ApiError ? err.message : 'Could not apply this selection.');
     } finally {
       setApplying(false);
     }
@@ -84,7 +90,7 @@ export function TaxFilterProvider({ children }: { children: ReactNode }) {
         `/tax/saved-filters/${filterId}/apply`,
         {},
       );
-      setCriteria(res.data.criteria);
+      setSelection(res.data.selection);
       setResult(res.data);
       setActiveSavedFilterId(res.data.filterId);
       setActiveSavedFilterName(res.data.filterName);
@@ -96,7 +102,7 @@ export function TaxFilterProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setCriteria(null);
+    setSelection(null);
     setResult(null);
     setActiveSavedFilterId(null);
     setActiveSavedFilterName(null);
@@ -105,8 +111,8 @@ export function TaxFilterProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<TaxFilterContextValue>(
     () => ({
-      active: !!result,
-      criteria,
+      active: !!result && result.excludedTransactionIds.length > 0,
+      selection,
       result,
       activeSavedFilterId,
       activeSavedFilterName,
@@ -115,18 +121,18 @@ export function TaxFilterProvider({ children }: { children: ReactNode }) {
       excludeTransactionIdsParam: result?.excludedTransactionIds.length
         ? result.excludedTransactionIds.join(',')
         : '',
-      applyFilter,
+      applySelection,
       applySavedFilter,
       reset,
     }),
     [
-      criteria,
+      selection,
       result,
       activeSavedFilterId,
       activeSavedFilterName,
       applying,
       error,
-      applyFilter,
+      applySelection,
       applySavedFilter,
       reset,
     ],

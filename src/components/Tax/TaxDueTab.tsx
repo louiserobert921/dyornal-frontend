@@ -3,7 +3,6 @@ import { Card } from '@/components/Card';
 import { TaxBreakdown } from '@/components/Tax/TaxBreakdown';
 import { TaxWaterfallChart } from '@/components/Tax/TaxWaterfallChart';
 import { SavedFiltersPanel } from '@/components/Tax/SavedFiltersPanel';
-import { TransactionListModal } from '@/components/Tax/TransactionListModal';
 import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useApi } from '@/hooks/useApi';
 import { formatAmount } from '@/lib/money';
@@ -27,22 +26,23 @@ export function TaxDueTab({
   taxYear,
   quarter,
   onQuarterChange,
+  onViewTransactions,
 }: {
   company: Company;
   taxYear: number;
   quarter: 1 | 2 | 3 | 4;
   onQuarterChange: (quarter: 1 | 2 | 3 | 4) => void;
+  onViewTransactions: () => void;
 }) {
-  const [modalKind, setModalKind] = useState<'sales' | 'expenses' | null>(null);
   const [showScenarios, setShowScenarios] = useState(false);
-  const { active: filterActive, criteria: filterCriteria, result: filterResult } = useTaxFilter();
+  const { active: filterActive, selection, result: filterResult } = useTaxFilter();
 
   const analysis = useApi<{ data: QuarterlyTaxAnalysisAll }>(
     `/tax/analysis/quarterly/all?companyId=${company.id}&taxYear=${taxYear}`,
   );
 
   const filterAppliesHere =
-    filterActive && filterCriteria?.quarter === quarter && filterCriteria.taxYear === taxYear;
+    filterActive && selection?.quarter === quarter && selection.taxYear === taxYear;
 
   if (analysis.loading) {
     return (
@@ -109,28 +109,24 @@ export function TaxDueTab({
           Based on {formatAmount(effectiveGrossSales)} in posted sales this quarter
           {filterAppliesHere ? ' (filtered)' : ''}
         </p>
+        <p className="m-0 mt-2 text-center text-xs text-ledger-400">
+          Click the "Transactions" tab to view and filter individual transactions.
+        </p>
 
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <button
             type="button"
-            onClick={() => setModalKind('sales')}
-            className="cursor-pointer rounded-lg border border-ledger-200 bg-white px-3 py-1.5 text-sm font-semibold text-ledger-700 hover:bg-ledger-50"
+            onClick={onViewTransactions}
+            className="cursor-pointer rounded-lg border-none bg-peso-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-peso-700"
           >
-            View Sales
-          </button>
-          <button
-            type="button"
-            onClick={() => setModalKind('expenses')}
-            className="cursor-pointer rounded-lg border border-ledger-200 bg-white px-3 py-1.5 text-sm font-semibold text-ledger-700 hover:bg-ledger-50"
-          >
-            View Expenses
+            View Transactions
           </button>
           <button
             type="button"
             onClick={() => setShowScenarios(true)}
             className="cursor-pointer rounded-lg border border-ledger-200 bg-white px-3 py-1.5 text-sm font-semibold text-ledger-700 hover:bg-ledger-50"
           >
-            Scenarios
+            View Saved Scenarios
           </button>
         </div>
       </Card>
@@ -143,16 +139,6 @@ export function TaxDueTab({
           <TaxBreakdown breakdown={breakdown} />
         </div>
       </Card>
-
-      {modalKind && (
-        <TransactionListModal
-          companyId={company.id}
-          taxYear={taxYear}
-          quarter={quarter}
-          kind={modalKind}
-          onClose={() => setModalKind(null)}
-        />
-      )}
 
       {showScenarios && (
         <SavedFiltersPanel companyId={company.id} onClose={() => setShowScenarios(false)} />

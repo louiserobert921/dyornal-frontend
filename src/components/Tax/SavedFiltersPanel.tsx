@@ -13,6 +13,7 @@ interface SavedFilterRow {
   taxYear: number;
   quarter: number;
   transactionCount: number;
+  totalCount: number;
   recalculatedTax: string;
 }
 
@@ -165,7 +166,7 @@ export function SavedFiltersPanel({ companyId, onClose }: { companyId: string; o
                             <p className="m-0 truncate text-xs text-ledger-500">{f.description}</p>
                           )}
                           <p className="m-0 mt-1 text-xs text-ledger-600">
-                            {f.transactionCount} transaction{f.transactionCount === 1 ? '' : 's'} · Tax:{' '}
+                            {f.transactionCount} of {f.totalCount} selected · Tax:{' '}
                             {formatAmount(f.recalculatedTax)}
                           </p>
                         </>

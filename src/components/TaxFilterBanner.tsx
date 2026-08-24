@@ -3,25 +3,12 @@ import { Link } from 'react-router-dom';
 import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { formatAmount } from '@/lib/money';
 
-const KIND_LABEL: Record<string, string> = {
-  sales: 'Sales',
-  expenses: 'Expenses',
-  all: 'Transactions',
-};
-
 /** Persistent, visible everywhere while a Tax Analysis what-if filter is
  * active — GL, financial statements, and reports all reflect the filtered
  * subset until this is dismissed with Reset. */
 export function TaxFilterBanner() {
-  const { active, criteria, result, activeSavedFilterName, reset } = useTaxFilter();
-  if (!active || !criteria || !result) return null;
-
-  const rangeLabel = [
-    criteria.minAmount !== undefined ? `≥ ₱${criteria.minAmount.toLocaleString('en-PH')}` : null,
-    criteria.maxAmount !== undefined ? `≤ ₱${criteria.maxAmount.toLocaleString('en-PH')}` : null,
-  ]
-    .filter(Boolean)
-    .join(' and ');
+  const { active, selection, result, activeSavedFilterName, reset } = useTaxFilter();
+  if (!active || !selection || !result) return null;
 
   const taxDue = 'totalTaxDue' in result.recalculatedTax
     ? result.recalculatedTax.totalTaxDue
@@ -35,13 +22,10 @@ export function TaxFilterBanner() {
           {activeSavedFilterName ? (
             <>Filter Active: "{activeSavedFilterName}"</>
           ) : (
-            <>
-              Filter Applied — Q{criteria.quarter} {criteria.taxYear} {KIND_LABEL[criteria.transactionType]}
-              {rangeLabel ? ` ${rangeLabel}` : ''}
-            </>
+            <>Filter Active — Q{selection.quarter} {selection.taxYear}</>
           )}
           <span className="ml-1.5 font-normal text-record-700/80">
-            ({result.includedCount} of {result.totalCount} included) · Tax: {formatAmount(taxDue)}
+            (Selected: {result.includedCount} of {result.totalCount} transactions) · Tax: {formatAmount(taxDue)}
           </span>
         </p>
       </div>

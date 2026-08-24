@@ -4,6 +4,7 @@ import { Card, PageHeading } from '@/components/Card';
 import { ComputationsTab } from '@/components/Tax/ComputationsTab';
 import { TaxDueTab } from '@/components/Tax/TaxDueTab';
 import { TaxIntelligenceTab } from '@/components/Tax/TaxIntelligenceTab';
+import { TransactionsTab } from '@/components/Tax/TransactionsTab';
 import { useApi } from '@/hooks/useApi';
 import type { Company, ListResponse } from '@/types';
 
@@ -18,6 +19,7 @@ function currentQuarterFor(fiscalYearStart: number): { taxYear: number; quarter:
 
 const TABS = [
   { key: 'due', label: 'Tax Due' },
+  { key: 'transactions', label: 'Transactions' },
   { key: 'computations', label: 'Computations' },
   { key: 'intelligence', label: 'Tax Intelligence' },
 ] as const;
@@ -90,7 +92,16 @@ export function TaxAnalysisPage() {
       </div>
 
       {tab === 'due' && (
-        <TaxDueTab company={company} taxYear={taxYear} quarter={quarter} onQuarterChange={setQuarter} />
+        <TaxDueTab
+          company={company}
+          taxYear={taxYear}
+          quarter={quarter}
+          onQuarterChange={setQuarter}
+          onViewTransactions={() => setTab('transactions')}
+        />
+      )}
+      {tab === 'transactions' && (
+        <TransactionsTab company={company} taxYear={taxYear} quarter={quarter} />
       )}
       {tab === 'computations' && (
         <ComputationsTab company={company} taxYear={taxYear} quarter={quarter} />
