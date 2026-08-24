@@ -5,6 +5,10 @@
 
 import { clearTokens, getAccessToken, refreshAccessToken } from './tokenStore';
 
+// Empty string keeps requests relative in dev, where Vite proxies /api to the
+// backend. In production, set VITE_API_URL to the deployed backend's origin.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+
 export class ApiError extends Error {
   status: number;
 
@@ -26,7 +30,7 @@ export function setSessionExpiredHandler(handler: () => void) {
 async function doFetch(path: string, init: RequestInit): Promise<Response> {
   const token = getAccessToken();
   const isFormData = init.body instanceof FormData;
-  return fetch(`/api${path}`, {
+  return fetch(`${API_BASE_URL}/api${path}`, {
     ...init,
     headers: {
       // FormData must NOT get an explicit content-type — the browser sets
