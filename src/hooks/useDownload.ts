@@ -18,7 +18,8 @@ export function useDownload() {
     try {
       const res = await api.get<{ token: string }>('/auth/download-token');
       const separator = url.includes('?') ? '&' : '?';
-      window.location.href = `${url}${separator}downloadToken=${encodeURIComponent(res.token)}`;
+      const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
+      window.location.href = `${apiBaseUrl}${url}${separator}downloadToken=${encodeURIComponent(res.token)}`;
     } finally {
       setDownloading(false);
     }

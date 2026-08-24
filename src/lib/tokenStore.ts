@@ -7,6 +7,10 @@
 const ACCESS_KEY = 'dyornal.accessToken';
 const REFRESH_KEY = 'dyornal.refreshToken';
 
+// Empty string keeps requests relative in dev, where Vite proxies /api to the
+// backend. In production, set VITE_API_URL to the deployed backend's origin.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_KEY);
 }
@@ -46,7 +50,7 @@ async function doRefresh(): Promise<boolean> {
   if (!refreshToken) return false;
 
   try {
-    const res = await fetch('/api/auth/refresh', {
+    const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       credentials: 'include',
