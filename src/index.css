@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+
+/* Tailwind v4 is configured in CSS, not a JS config file. Design tokens declared
+   here become utilities automatically — `@theme` values generate classes like
+   bg-peso-600 and text-ledger-700.
+   
+   Brand palette: navy blue, orange, and white — matching the Dyornal logo.
+   No green anywhere in the app. The `peso-*` and `record-*` token names are
+   kept from earlier phases (renaming would touch every className that uses
+   them); only their values changed, to the exact navy and orange sampled from
+   the logo. `peso-*` is the primary brand color (was green, now navy blue);
+   `record-*` is the orange accent, used for the RECORD button and warnings. */
+@theme {
+  --color-peso-50: #eef3f9;
+  --color-peso-100: #d7e3f0;
+  --color-peso-500: #1e4d85;
+  --color-peso-600: #0d3868;
+  --color-peso-700: #002b5f;
+
+  --color-record-50: #fff1e8;
+  --color-record-100: #ffe0cc;
+  --color-record-400: #ff8a4d;
+  --color-record-500: #fe5f07;
+  --color-record-600: #e04f00;
+  --color-record-700: #b83f00;
+
+  /* The journal screens imitate a bound ledger book: cream stock, tan rules,
+     and a navy that reads as printed rather than screen-blue. */
+  --color-paper-50: #faf8f2;
+  --color-paper-100: #f5f1e8;
+  --color-paper-200: #efe9db;
+  --color-rule-200: #e8dcc8;
+  --color-rule-300: #d4c4b0;
+  --color-ink-700: #2c3e50;
+  --color-ink-900: #1a2733;
+  --color-navy-700: #002b5f;
+
+  --color-ledger-50: #f8fafc;
+  --color-ledger-100: #f1f5f9;
+  --color-ledger-200: #e2e8f0;
+  --color-ledger-500: #64748b;
+  --color-ledger-700: #334155;
+  --color-ledger-900: #0f172a;
+}
+
+/* Peso amounts and account codes line up in columns only with tabular figures. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The record button breathes so it reads as the primary action on the screen.
+   Suppressed under reduced-motion, where a persistent pulse is a distraction
+   rather than an affordance. */
+@keyframes record-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(254 95 7 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 22px rgb(254 95 7 / 0);
+  }
+}
+
+.animate-record-pulse {
+  animation: record-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-record-pulse {
+    animation: none;
+  }
+}
+
+/* Ledger pages are printed at the size the paper metaphor implies, not the
+   app's default scale. */
+.ledger-row {
+  min-height: 28px;
+}
+
+.ledger-mono {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-serif {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+/* The spine: a gutter down the binding edge, with the faint shadow a facing
+   page casts in a real book. */
+.ledger-spine {
+  background-image: linear-gradient(
+    to right,
+    var(--color-rule-300) 0px,
+    var(--color-rule-300) 1px,
+    rgb(0 0 0 / 0.05) 1px,
+    transparent 12px
+  );
+}
+
+/* Ruled lines behind a journal page's rows, like a lined notebook. Spacing
+   matches .ledger-row's 28px height so text sits on, not between, the lines.
+   A repeating gradient stays crisp at any zoom level, unlike a rasterized
+   SVG background. */
+.ledger-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    var(--color-rule-200) 27px,
+    var(--color-rule-200) 28px
+  );
+  background-position: 0 2px;
+}
+
+/* Print: the browser drops backgrounds by default, which would strip the
+   cream stock the books are meant to be read on. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-page {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  body,
+  .ledger-paper {
+    background-color: #f5f1e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .ledger-lines {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Print-to-PDF: the browser's own engine produces the file, so the page box is
+   set here rather than by a rendering library. */
+@page {
+  size: A4 portrait;
+  margin: 14mm;
+}
+
+@media print {
+  /* Recharts sizes to its container, which collapses when the layout reflows
+     for print; fixing the height keeps the charts on the page. */
+  .recharts-responsive-container {
+    height: 220px !important;
+  }
+}
