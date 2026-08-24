@@ -600,6 +600,41 @@ export interface TaxAnalysis {
   ytdProjection: YtdTaxProjection | null;
 }
 
+export interface QuarterlyTaxAnalysis {
+  quarter: 1 | 2 | 3 | 4;
+  taxYear: number;
+  periodStart: string;
+  periodEnd: string;
+  grossSales: string;
+  deductionMethod: DeductionMethod;
+  result: TaxResult | MixedIncomeTaxResult;
+}
+
+export interface QuarterlyTaxProjection {
+  quarter: 1 | 2 | 3 | 4;
+  taxYear: number;
+  quarterGrossSales: string;
+  projectedAnnualGrossSales: string;
+  quarterItemizedDeductions: string;
+  currentChoice: TaxResult | MixedIncomeTaxResult;
+  allOptions: MethodComparison[];
+  recommendation: DeductionMethod | null;
+  reason: string | null;
+  incorporationAnalysis: IncorporationAnalysis | null;
+}
+
+export interface QuarterlyTaxAnalysisAll {
+  taxYear: number;
+  deductionMethod: DeductionMethod;
+  quarters: Array<{
+    quarter: 1 | 2 | 3 | 4;
+    periodStart: string;
+    periodEnd: string;
+    grossSales: string;
+    result: TaxResult | MixedIncomeTaxResult;
+  }>;
+}
+
 export interface TaxFileUpload {
   id: string;
   filingId: string;

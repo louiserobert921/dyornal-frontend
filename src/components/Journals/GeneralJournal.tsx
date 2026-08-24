@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Download, Search, Volume2, VolumeX } from 'lucide-react';
 import { JournalPageView } from './JournalPageView';
+import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useDownload } from '@/hooks/useDownload';
 import { usePageTurn } from '@/hooks/usePageTurn';
 import { ApiError, api } from '@/lib/api';
@@ -41,6 +42,7 @@ export function GeneralJournal({
   const debouncedKeyword = useDebounced(keyword);
   const { enabled: soundOn, setEnabled: setSoundOn, play } = usePageTurn();
   const { download, downloading } = useDownload();
+  const { excludeTransactionIdsParam } = useTaxFilter();
 
   const query = useMemo(() => {
     const params = new URLSearchParams({
@@ -52,11 +54,12 @@ export function GeneralJournal({
     if (accountCode) params.set('accountCode', accountCode);
     if (from) params.set('from', from);
     if (to) params.set('to', to);
+    if (excludeTransactionIdsParam) params.set('excludeTransactionIds', excludeTransactionIdsParam);
     return params.toString();
-  }, [companyId, page, debouncedKeyword, accountCode, from, to]);
+  }, [companyId, page, debouncedKeyword, accountCode, from, to, excludeTransactionIdsParam]);
 
   // Any filter change invalidates the current page number.
-  const filterKey = `${debouncedKeyword}|${accountCode}|${from}|${to}`;
+  const filterKey = `${debouncedKeyword}|${accountCode}|${from}|${to}|${excludeTransactionIdsParam}`;
   const lastFilterKey = useRef(filterKey);
   useEffect(() => {
     if (lastFilterKey.current !== filterKey) {

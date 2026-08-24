@@ -1,7 +1,7 @@
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Bell, Calculator, CalendarClock, Settings2 } from 'lucide-react';
 import { PageHeading } from '@/components/Card';
-import { TaxAnalysisDashboard } from '@/pages/TaxAnalysisDashboard';
+import { TaxAnalysisPage } from '@/pages/TaxAnalysisPage';
 import { TaxFilingCalendar } from '@/pages/TaxFilingCalendar';
 import { TaxNotificationPreferencesPage } from '@/pages/TaxNotificationPreferences';
 import { TaxSetupWizard } from '@/pages/TaxSetupWizard';
@@ -48,7 +48,7 @@ export function TaxPage() {
         <div className="min-w-0 flex-1">
           <Routes>
             <Route index element={<Navigate to="analysis" replace />} />
-            <Route path="analysis" element={<TaxAnalysisDashboard />} />
+            <Route path="analysis" element={<TaxAnalysisPage />} />
             <Route path="filings" element={<TaxFilingCalendar />} />
             <Route path="setup" element={<TaxSetupWizard />} />
             <Route path="notifications" element={<TaxNotificationPreferencesPage />} />

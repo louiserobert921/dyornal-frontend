@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { TaxFilterBanner } from '@/components/TaxFilterBanner';
 
 /** The 5 items a user needs to stay audit-ready day to day. */
 const NAV = [
@@ -212,6 +213,7 @@ export function Layout() {
       </div>
 
       <main className="min-w-0 flex-1 p-4 sm:p-6 md:p-8 print:p-0">
+        <TaxFilterBanner />
         <ErrorBoundary key={pathname}>
           <Outlet />
         </ErrorBoundary>

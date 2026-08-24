@@ -8,6 +8,7 @@ import {
   TrialBalanceView,
 } from '@/components/Reports/ExternalReports';
 import { KpiDashboard } from '@/components/Reports/InternalReports';
+import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useDownload } from '@/hooks/useDownload';
 import { useApi } from '@/hooks/useApi';
 import type {
@@ -58,6 +59,7 @@ export function ReportsPage() {
   const { download, downloading } = useDownload();
   const [dateFrom, setDateFrom] = useState(yearStart());
   const [dateTo, setDateTo] = useState(today());
+  const { excludeTransactionIdsParam } = useTaxFilter();
 
   const companies = useApi<ListResponse<Company>>('/companies');
   const company = companies.data?.data[0] ?? null;
@@ -66,30 +68,42 @@ export function ReportsPage() {
    * Point-in-time reports take a single date; period reports take both. Passing
    * the wrong pair would silently produce a report for the wrong window, so the
    * query is built per report rather than shared.
+   *
+   * balance-sheet, income-statement, and cash-flow also carry the active Tax
+   * Analysis what-if filter's exclusion set, so a filter applied there keeps
+   * these statements in sync until reset — trial-balance is left unfiltered
+   * since it exists to prove the ledger itself balances.
    */
   const path = useMemo(() => {
     if (!company) return null;
     const id = company.id;
+    const excludeParam = excludeTransactionIdsParam
+      ? `&excludeTransactionIds=${excludeTransactionIdsParam}`
+      : '';
     switch (report) {
       case 'balance-sheet':
-        return `/reports/balance-sheet?companyId=${id}&date=${dateTo}`;
+        return `/reports/balance-sheet?companyId=${id}&date=${dateTo}${excludeParam}`;
       case 'trial-balance':
         return `/reports/trial-balance?companyId=${id}&date=${dateTo}`;
       default:
-        return `/reports/${report}?companyId=${id}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+        return `/reports/${report}?companyId=${id}&dateFrom=${dateFrom}&dateTo=${dateTo}${excludeParam}`;
     }
-  }, [company, report, dateFrom, dateTo]);
+  }, [company, report, dateFrom, dateTo, excludeTransactionIdsParam]);
 
   const result = useApi<BalanceSheet | IncomeStatement | CashFlow | TrialBalance | Kpis>(path);
 
   const excelHref = useMemo(() => {
     if (!company) return '';
     const id = company.id;
+    const excludeParam =
+      excludeTransactionIdsParam && report !== 'trial-balance'
+        ? `&excludeTransactionIds=${excludeTransactionIdsParam}`
+        : '';
     if (report === 'balance-sheet' || report === 'trial-balance') {
-      return `/api/exports/excel/${report}?companyId=${id}&date=${dateTo}`;
+      return `/api/exports/excel/${report}?companyId=${id}&date=${dateTo}${excludeParam}`;
     }
-    return `/api/exports/excel/${report}?companyId=${id}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
-  }, [company, report, dateFrom, dateTo]);
+    return `/api/exports/excel/${report}?companyId=${id}&dateFrom=${dateFrom}&dateTo=${dateTo}${excludeParam}`;
+  }, [company, report, dateFrom, dateTo, excludeTransactionIdsParam]);
 
   if (companies.loading) {
     return (

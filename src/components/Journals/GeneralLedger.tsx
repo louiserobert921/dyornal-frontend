@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Download } from 'lucide-react';
 import { BalanceProof, Paper, PaperFooter, PaperHeading } from './Paper';
+import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useDownload } from '@/hooks/useDownload';
 import { ApiError, api } from '@/lib/api';
 import { formatAmount } from '@/lib/money';
@@ -33,14 +34,16 @@ export function GeneralLedger({
   const [data, setData] = useState<LedgerAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { excludeTransactionIdsParam } = useTaxFilter();
 
   const query = useMemo(() => {
     const params = new URLSearchParams({ companyId, limit: '500' });
     if (accountCode) params.set('accountCode', accountCode);
     if (from) params.set('dateFrom', from);
     if (to) params.set('dateTo', to);
+    if (excludeTransactionIdsParam) params.set('excludeTransactionIds', excludeTransactionIdsParam);
     return params.toString();
-  }, [companyId, accountCode, from, to]);
+  }, [companyId, accountCode, from, to, excludeTransactionIdsParam]);
 
   useEffect(() => {
     let cancelled = false;
