@@ -674,3 +674,62 @@ export interface TaxNotificationPreference {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Payroll ──────────────────────────────────────────────────────────────────
+
+export type EmploymentStatus = 'PERMANENT' | 'CONTRACTUAL' | 'CASUAL';
+export type TaxStatus = 'OPTIONAL' | 'MANDATORY';
+
+export interface Employee {
+  id: string;
+  companyId: string;
+  name: string;
+  position: string | null;
+  employmentStatus: EmploymentStatus;
+  basicMonthlyPay: string;
+  allowances: string;
+  /** basicMonthlyPay + allowances, computed by the API — never sent by the client. */
+  grossMonthlyCompensation: string;
+  taxStatus: TaxStatus;
+  tin: string | null;
+  effectiveDate: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollSummary {
+  totalEmployees: number;
+  totalGrossCompensation: string;
+}
+
+export interface ImportPayrollResult {
+  imported: number;
+  failed: number;
+  errors: { row: number; message: string }[];
+}
+
+// ── Business Compliance ─────────────────────────────────────────────────────
+
+export type ComplianceDocType = 'GIS' | 'BYLAWS' | 'AOI' | 'AUDITED_FINANCIALS' | 'OTHER';
+export type ComplianceFilingType = 'Q1' | 'Q2' | 'Q3' | 'ANNUAL';
+
+export interface ComplianceDocument {
+  id: string;
+  companyId: string;
+  documentType: ComplianceDocType;
+  filingType: ComplianceFilingType | null;
+  taxYear: number;
+  fileName: string;
+  fileUrl: string;
+  notes: string | null;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export interface ComplianceStatus {
+  latestGis: { taxYear: number; filingType: ComplianceFilingType; uploadedAt: string } | null;
+  bylawsUploaded: boolean;
+  aoiUploaded: boolean;
+  nextDeadline: { filingType: ComplianceFilingType; taxYear: number; dueDate: string; daysUntil: number } | null;
+}

@@ -3,11 +3,13 @@ import { Layout } from '@/components/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AccountsPage } from '@/pages/AccountsPage';
 import { AuditTrailPage } from '@/pages/AuditTrailPage';
+import { CompliancePage } from '@/pages/CompliancePage';
 import { ContactsPage } from '@/pages/ContactsPage';
 import { Dashboard } from '@/pages/Dashboard';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { JournalsPage } from '@/pages/JournalsPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { PayrollPage } from '@/pages/PayrollPage';
 import { RecordPage } from '@/pages/RecordPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="contacts" element={<ContactsPage />} />
+          <Route path="payroll" element={<PayrollPage />} />
+          <Route path="compliance" element={<CompliancePage />} />
           <Route path="audit-trail" element={<AuditTrailPage />} />
           <Route path="subscription" element={<SubscriptionPage />} />
           <Route path="tax/*" element={<TaxPage />} />

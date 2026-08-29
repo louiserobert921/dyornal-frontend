@@ -6,12 +6,14 @@ import {
   Calculator,
   ChevronDown,
   ContactRound,
+  FolderCheck,
   LayoutDashboard,
   Menu,
   NotebookPen,
   Receipt,
   ScrollText,
   Settings,
+  Users,
   Wallet,
   X,
 } from 'lucide-react';
@@ -33,6 +35,8 @@ const MORE_NAV = [
   { to: '/reports', label: 'Reports', icon: Receipt },
   { to: '/accounts', label: 'Accounts', icon: Wallet },
   { to: '/contacts', label: 'Contacts', icon: ContactRound },
+  { to: '/payroll', label: 'Payroll', icon: Users },
+  { to: '/compliance', label: 'Compliance', icon: FolderCheck },
 ];
 
 /** Each item reads as a manila folder tab hanging off the shelf's left edge:
