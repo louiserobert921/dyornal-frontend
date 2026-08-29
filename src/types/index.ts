@@ -733,3 +733,37 @@ export interface ComplianceStatus {
   aoiUploaded: boolean;
   nextDeadline: { filingType: ComplianceFilingType; taxYear: number; dueDate: string; daysUntil: number } | null;
 }
+
+// ── Product Turnover (POS import) ───────────────────────────────────────────
+
+export type TurnoverRank = 'HIGH' | 'MID' | 'LOW';
+export type ConsistencyRating = 'STABLE' | 'MODERATE' | 'VARIABLE';
+
+export interface ProductTurnoverItem {
+  menuItemName: string;
+  dailyQty: number;
+  weeklyQty: number;
+  monthlyQty: number;
+  dailySales: string;
+  weeklySales: string;
+  monthlySales: string;
+  turnoverRank: TurnoverRank;
+  consistency: ConsistencyRating | null;
+}
+
+export interface ProductTurnoverReport {
+  meta: {
+    company: { name: string; tin: string | null };
+    dateFrom: string;
+    dateTo: string;
+    weeksOfData: number;
+  };
+  items: ProductTurnoverItem[];
+}
+
+export interface ImportMenuSalesResult {
+  imported: number;
+  failed: number;
+  errors: { row: number; message: string }[];
+  replacedDateRange: { from: string; to: string } | null;
+}

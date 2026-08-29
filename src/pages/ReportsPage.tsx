@@ -7,7 +7,8 @@ import {
   IncomeStatementView,
   TrialBalanceView,
 } from '@/components/Reports/ExternalReports';
-import { KpiDashboard } from '@/components/Reports/InternalReports';
+import { ImportMenuSalesModal } from '@/components/Reports/ImportMenuSalesModal';
+import { KpiDashboard, ProductTurnoverView } from '@/components/Reports/InternalReports';
 import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useDownload } from '@/hooks/useDownload';
 import { useApi } from '@/hooks/useApi';
@@ -18,6 +19,7 @@ import type {
   IncomeStatement,
   Kpis,
   ListResponse,
+  ProductTurnoverReport,
   TrialBalance,
 } from '@/types';
 
@@ -28,7 +30,10 @@ const EXTERNAL = [
   { key: 'trial-balance', label: 'Trial Balance' },
 ] as const;
 
-const INTERNAL = [{ key: 'kpis', label: 'KPI Dashboard' }] as const;
+const INTERNAL = [
+  { key: 'kpis', label: 'KPI Dashboard' },
+  { key: 'product-turnover', label: 'Product Turnover' },
+] as const;
 
 type ReportKey = (typeof EXTERNAL)[number]['key'] | (typeof INTERNAL)[number]['key'];
 
@@ -59,6 +64,7 @@ export function ReportsPage() {
   const { download, downloading } = useDownload();
   const [dateFrom, setDateFrom] = useState(yearStart());
   const [dateTo, setDateTo] = useState(today());
+  const [importingMenuSales, setImportingMenuSales] = useState(false);
   const { excludeTransactionIdsParam } = useTaxFilter();
 
   const companies = useApi<ListResponse<Company>>('/companies');
@@ -90,7 +96,9 @@ export function ReportsPage() {
     }
   }, [company, report, dateFrom, dateTo, excludeTransactionIdsParam]);
 
-  const result = useApi<BalanceSheet | IncomeStatement | CashFlow | TrialBalance | Kpis>(path);
+  const result = useApi<BalanceSheet | IncomeStatement | CashFlow | TrialBalance | Kpis | ProductTurnoverReport>(
+    path,
+  );
 
   const excelHref = useMemo(() => {
     if (!company) return '';
@@ -99,6 +107,12 @@ export function ReportsPage() {
       excludeTransactionIdsParam && report !== 'trial-balance'
         ? `&excludeTransactionIds=${excludeTransactionIdsParam}`
         : '';
+    // product-turnover's export lives at /exports/<name>.xlsx, not
+    // /exports/excel/<name> — same convention as payroll's export, since
+    // both build from POS/side-data rather than the financial statements.
+    if (report === 'product-turnover') {
+      return `/api/exports/product-turnover.xlsx?companyId=${id}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+    }
     if (report === 'balance-sheet' || report === 'trial-balance') {
       return `/api/exports/excel/${report}?companyId=${id}&date=${dateTo}${excludeParam}`;
     }
@@ -255,7 +269,21 @@ export function ReportsPage() {
           {report === 'kpis' && has(result.data, 'headline') && (
             <KpiDashboard data={result.data as Kpis} />
           )}
+          {report === 'product-turnover' && has(result.data, 'items') && (
+            <ProductTurnoverView
+              data={result.data as ProductTurnoverReport}
+              onImportClick={() => setImportingMenuSales(true)}
+            />
+          )}
         </>
+      )}
+
+      {importingMenuSales && (
+        <ImportMenuSalesModal
+          companyId={company.id}
+          onClose={() => setImportingMenuSales(false)}
+          onImported={() => void result.reload()}
+        />
       )}
     </div>
   );
