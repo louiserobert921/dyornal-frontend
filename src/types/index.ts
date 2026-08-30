@@ -675,13 +675,24 @@ export interface ImportPayrollResult {
 
 // ── Business Compliance ─────────────────────────────────────────────────────
 
-export type ComplianceDocType = 'GIS' | 'BYLAWS' | 'AOI' | 'AUDITED_FINANCIALS' | 'OTHER';
+export type ComplianceDocType =
+  | 'GIS'
+  | 'BYLAWS'
+  | 'AOI'
+  | 'AUDITED_FINANCIALS'
+  | 'COR'
+  | 'FORM_1905'
+  | 'BOOKS_OF_ACCOUNTS'
+  | 'OR_INVOICE_REGISTRATION'
+  | 'OTHER';
 export type ComplianceFilingType = 'Q1' | 'Q2' | 'Q3' | 'ANNUAL';
 
 export interface ComplianceDocument {
   id: string;
   companyId: string;
   documentType: ComplianceDocType;
+  /** Set only when documentType is OTHER — the user-entered name. */
+  documentName: string | null;
   filingType: ComplianceFilingType | null;
   taxYear: number;
   fileName: string;

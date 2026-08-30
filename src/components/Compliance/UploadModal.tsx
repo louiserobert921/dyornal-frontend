@@ -6,19 +6,41 @@ import { ApiError, api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
 import type { ComplianceDocType, ComplianceDocument, ComplianceFilingType } from '@/types';
 
-const DOC_TYPES: ComplianceDocType[] = ['GIS', 'BYLAWS', 'AOI', 'AUDITED_FINANCIALS', 'OTHER'];
+const DOC_TYPES: ComplianceDocType[] = [
+  'GIS',
+  'BYLAWS',
+  'AOI',
+  'AUDITED_FINANCIALS',
+  'COR',
+  'FORM_1905',
+  'BOOKS_OF_ACCOUNTS',
+  'OR_INVOICE_REGISTRATION',
+  'OTHER',
+];
 const DOC_LABEL: Record<ComplianceDocType, string> = {
   GIS: 'GIS (Gross Income Summary)',
   BYLAWS: 'Bylaws',
   AOI: 'Articles of Incorporation',
   AUDITED_FINANCIALS: 'Audited Financial Statements',
+  COR: 'Certificate of Registration (2303)',
+  FORM_1905: 'BIR Form 1905 (Registration Update)',
+  BOOKS_OF_ACCOUNTS: 'Books of Accounts',
+  OR_INVOICE_REGISTRATION: 'OR / Invoice Registration',
   OTHER: 'Other',
 };
 const ACCEPTED_TYPES = ['application/pdf', 'image/png', 'image/jpeg'];
 
-/** GIS/Audited Financials are tied to a filing period; Bylaws/AOI/Other are
- * evergreen documents amended rather than filed quarterly. */
-const EVERGREEN: ComplianceDocType[] = ['BYLAWS', 'AOI', 'OTHER'];
+/** GIS/Audited Financials are tied to a filing period; everything else is
+ * an evergreen document amended or reissued rather than filed quarterly. */
+const EVERGREEN: ComplianceDocType[] = [
+  'BYLAWS',
+  'AOI',
+  'COR',
+  'FORM_1905',
+  'BOOKS_OF_ACCOUNTS',
+  'OR_INVOICE_REGISTRATION',
+  'OTHER',
+];
 
 export function UploadModal({
   companyId,
@@ -33,6 +55,7 @@ export function UploadModal({
   useEscapeToClose(onClose);
 
   const [documentType, setDocumentType] = useState<ComplianceDocType>('GIS');
+  const [documentName, setDocumentName] = useState('');
   const [filingType, setFilingType] = useState<ComplianceFilingType>('Q1');
   const [taxYear, setTaxYear] = useState(new Date().getFullYear());
   const [notes, setNotes] = useState('');
@@ -42,8 +65,13 @@ export function UploadModal({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isEvergreen = EVERGREEN.includes(documentType);
+  const isOther = documentType === 'OTHER';
 
   async function handleFile(file: File) {
+    if (isOther && !documentName.trim()) {
+      setError('Enter a document name before uploading.');
+      return;
+    }
     if (!ACCEPTED_TYPES.includes(file.type)) {
       setError('Only PDF, PNG, or JPEG files are accepted.');
       return;
@@ -59,11 +87,12 @@ export function UploadModal({
       form.append('file', file);
       form.append('companyId', companyId);
       form.append('documentType', documentType);
+      if (isOther) form.append('documentName', documentName.trim());
       if (!isEvergreen) form.append('filingType', filingType);
       form.append('taxYear', String(taxYear));
       if (notes.trim()) form.append('notes', notes.trim());
       await api.upload<{ data: ComplianceDocument }>('/compliance/upload', form);
-      toast.success(`${DOC_LABEL[documentType]} uploaded`);
+      toast.success(`${isOther ? documentName.trim() : DOC_LABEL[documentType]} uploaded`);
       onUploaded();
       onClose();
     } catch (err) {
@@ -105,6 +134,19 @@ export function UploadModal({
               ))}
             </select>
           </FormField>
+
+          {isOther && (
+            <FormField label="Document Name" htmlFor="doc-name" required hint="What is this document?">
+              <input
+                id="doc-name"
+                type="text"
+                value={documentName}
+                onChange={(e) => setDocumentName(e.target.value)}
+                placeholder="e.g. Barangay Business Permit"
+                className={`${inputClass()} text-base`}
+              />
+            </FormField>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             {!isEvergreen && (
@@ -165,7 +207,7 @@ export function UploadModal({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              disabled={uploading}
+              disabled={uploading || (isOther && !documentName.trim())}
               className="mt-1 flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg border border-ledger-200 bg-white px-3 py-2 text-xs font-semibold text-ledger-700 hover:bg-ledger-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Upload size={14} aria-hidden />}

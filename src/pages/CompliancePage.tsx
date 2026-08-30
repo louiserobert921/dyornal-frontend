@@ -9,12 +9,26 @@ import { ApiError, api } from '@/lib/api';
 import { useToast } from '@/lib/toast';
 import type { Company, ComplianceDocType, ComplianceDocument, ComplianceFilingType, ComplianceStatus, ListResponse } from '@/types';
 
-const DOC_TYPES: ComplianceDocType[] = ['GIS', 'BYLAWS', 'AOI', 'AUDITED_FINANCIALS', 'OTHER'];
+const DOC_TYPES: ComplianceDocType[] = [
+  'GIS',
+  'BYLAWS',
+  'AOI',
+  'AUDITED_FINANCIALS',
+  'COR',
+  'FORM_1905',
+  'BOOKS_OF_ACCOUNTS',
+  'OR_INVOICE_REGISTRATION',
+  'OTHER',
+];
 const DOC_LABEL: Record<ComplianceDocType, string> = {
   GIS: 'GIS',
   BYLAWS: 'Bylaws',
   AOI: 'Articles of Incorporation',
   AUDITED_FINANCIALS: 'Audited Financials',
+  COR: 'Certificate of Registration',
+  FORM_1905: 'BIR Form 1905',
+  BOOKS_OF_ACCOUNTS: 'Books of Accounts',
+  OR_INVOICE_REGISTRATION: 'OR / Invoice Registration',
   OTHER: 'Other',
 };
 const PERIOD_LABEL: Record<ComplianceFilingType, string> = {
@@ -182,7 +196,9 @@ export function CompliancePage() {
                   <FileText size={18} className="mt-0.5 shrink-0 text-peso-600" aria-hidden />
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-ledger-900">{DOC_LABEL[d.documentType]}</span>
+                      <span className="text-sm font-bold text-ledger-900">
+                        {d.documentType === 'OTHER' && d.documentName ? d.documentName : DOC_LABEL[d.documentType]}
+                      </span>
                       <span className="rounded bg-peso-50 px-1.5 py-0.5 text-[10px] font-bold text-peso-700 uppercase">
                         Submitted
                       </span>
