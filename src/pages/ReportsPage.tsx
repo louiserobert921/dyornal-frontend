@@ -8,7 +8,7 @@ import {
   TrialBalanceView,
 } from '@/components/Reports/ExternalReports';
 import { ImportMenuSalesModal } from '@/components/Reports/ImportMenuSalesModal';
-import { KpiDashboard, ProductTurnoverView } from '@/components/Reports/InternalReports';
+import { ProductTurnoverView } from '@/components/Reports/InternalReports';
 import { useTaxFilter } from '@/contexts/TaxFilterContext';
 import { useDownload } from '@/hooks/useDownload';
 import { useApi } from '@/hooks/useApi';
@@ -17,7 +17,6 @@ import type {
   CashFlow,
   Company,
   IncomeStatement,
-  Kpis,
   ListResponse,
   ProductTurnoverReport,
   TrialBalance,
@@ -31,7 +30,6 @@ const EXTERNAL = [
 ] as const;
 
 const INTERNAL = [
-  { key: 'kpis', label: 'KPI Dashboard' },
   { key: 'product-turnover', label: 'Product Turnover' },
 ] as const;
 
@@ -96,7 +94,7 @@ export function ReportsPage() {
     }
   }, [company, report, dateFrom, dateTo, excludeTransactionIdsParam]);
 
-  const result = useApi<BalanceSheet | IncomeStatement | CashFlow | TrialBalance | Kpis | ProductTurnoverReport>(
+  const result = useApi<BalanceSheet | IncomeStatement | CashFlow | TrialBalance | ProductTurnoverReport>(
     path,
   );
 
@@ -157,7 +155,7 @@ export function ReportsPage() {
               type="button"
               onClick={() => {
                 setScope(s);
-                setReport(s === 'external' ? 'balance-sheet' : 'kpis');
+                setReport(s === 'external' ? 'balance-sheet' : 'product-turnover');
               }}
               aria-pressed={scope === s}
               className={`cursor-pointer rounded-md border-none px-3 py-1.5 text-sm font-semibold ${
@@ -265,9 +263,6 @@ export function ReportsPage() {
           )}
           {report === 'trial-balance' && has(result.data, 'accounts') && (
             <TrialBalanceView data={result.data as TrialBalance} />
-          )}
-          {report === 'kpis' && has(result.data, 'headline') && (
-            <KpiDashboard data={result.data as Kpis} />
           )}
           {report === 'product-turnover' && has(result.data, 'items') && (
             <ProductTurnoverView

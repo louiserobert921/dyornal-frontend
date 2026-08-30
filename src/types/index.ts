@@ -272,42 +272,6 @@ export interface TrialBalance {
   totals: { debit: string; credit: string; difference: string; balanced: boolean };
 }
 
-export interface FriendlyKpiValue {
-  value: number | null;
-  trend: 'up' | 'down' | 'neutral';
-}
-
-export interface FriendlyKpis {
-  netMargin: FriendlyKpiValue;
-  daysToCollect: FriendlyKpiValue;
-  currentRatio: FriendlyKpiValue;
-  returnOnEquity: FriendlyKpiValue;
-  debtToEquity: FriendlyKpiValue;
-  healthScores: {
-    profitabilityScore: number | null;
-    cashHealthScore: number | null;
-    stabilityScore: number | null;
-  };
-}
-
-export interface Kpis {
-  meta: ReportMeta;
-  headline: {
-    revenue: string;
-    expenses: string;
-    netIncome: string;
-    cash: string;
-    receivables: string;
-    payables: string;
-  };
-  /** Null wherever the denominator was zero — undefined, not infinite. */
-  ratios: Record<string, number | null>;
-  /** The 5-metric, plain-English dashboard shown in place of the full ratio panel. */
-  friendlyKpis: FriendlyKpis;
-  series: { month: string; revenue: string; expenses: string; netIncome: string; cash: string }[];
-  expenseBreakdown: { code: string; name: string; amount: string }[];
-}
-
 export interface Forecast {
   meta: ReportMeta & {
     monthsProjected: number;
